@@ -1,0 +1,464 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Physics Simulation Platform</title>
+    <style>
+        /* CSS Reset */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #F3F4F6;
+            color: #374151;
+            line-height: 1.6;
+            overflow-x: hidden; /* Prevent horizontal scrollbar */
+        }
+
+        /* Color Scheme */
+        :root {
+            --primary-color: #1E3A8A;
+            --accent-color: #3B82F6;
+            --secondary-color: #F3F4F6;
+            --text-color: #374151;
+            --white-color: #FFFFFF;
+            --success-color: #10B981;
+            --error-color: #EF4444;
+        }
+
+        /* General Styles */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5em;
+        }
+
+        h1 { font-size: 2.5em; }
+        h2 { font-size: 2em; }
+        h3 { font-size: 1.5em; }
+
+        p {
+            margin-bottom: 1em;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: var(--white-color);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2563EB;
+        }
+
+        /* Header */
+        .header {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+            padding: 10px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+        }
+
+        .nav-links li {
+            margin: 0 15px;
+        }
+
+        .nav-links a {
+            color: var(--white-color);
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #3B82F6;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            cursor: pointer;
+        }
+
+        .bar {
+            width: 25px;
+            height: 3px;
+            background-color: var(--white-color);
+            margin: 5px 0;
+            transition: 0.4s;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 50px 0;
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.2em;
+            max-width: 800px;
+            margin: 0 auto 30px;
+        }
+
+        /* Simulation Section */
+        .simulation-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            padding: 20px;
+        }
+
+        .simulation-card {
+            background-color: var(--white-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .simulation-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .simulation-card img {
+            max-width: 100%;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        /* Simulation Workspace */
+        .simulation-workspace {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .simulation-area {
+            background-color: var(--white-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 80%;
+            max-width: 800px;
+            margin-bottom: 20px;
+            position: relative; /* For positioning controls */
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .slider {
+            width: 80%;
+            margin: 10px 0;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header .container {
+                flex-direction: column;
+            }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                text-align: center;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-links li {
+                margin: 10px 0;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .simulation-section {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .simulation-card {
+                width: 80%;
+            }
+
+            .simulation-workspace {
+                width: 100%;
+            }
+
+            .simulation-area {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1>Physics Simulation</h1>
+            <div class="hamburger" onclick="toggleMenu()">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Simulations</a></li>
+                <li><a href="#">Tutorials</a></li>
+                <li><a href="#">Quizzes</a></li>
+                <li><a href="#">Resources</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Explore the Laws of Physics</h1>
+            <p>Dive into interactive simulations and discover the fundamental principles of the universe.</p>
+            <button>Get Started</button>
+        </div>
+    </section>
+
+    <!-- Simulation Section -->
+    <section class="simulation-section">
+        <div class="simulation-card">
+            <img src="https://via.placeholder.com/300x150" alt="Law of Reflection">
+            <h3>Law of Reflection</h3>
+            <p>Control light rays and adjust mirror angles to witness precise beam reflections.</p>
+            <button onclick="loadSimulation('reflection')">Try It</button>
+        </div>
+        <div class="simulation-card">
+            <img src="https://via.placeholder.com/300x150" alt="Newton's Third Law">
+            <h3>Newton's Third Law</h3>
+            <p>Explore rocket thrust, bouncing objects, and collision simulations.</p>
+            <button onclick="loadSimulation('newton')">Try It</button>
+        </div>
+    </section>
+
+    <!-- Simulation Workspace -->
+    <section class="simulation-workspace" id="simulationWorkspace">
+        <!-- Simulation content will be loaded here -->
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Interactive Physics Simulation Platform. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Toggle mobile menu
+        function toggleMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.classList.toggle('active');
+        }
+
+        // Load simulation content
+        function loadSimulation(type) {
+            const workspace = document.getElementById('simulationWorkspace');
+            if (type === 'reflection') {
+                workspace.innerHTML = `
+                    <div class="simulation-area">
+                        <h2>Law of Reflection Simulation</h2>
+                        <div id="reflection-canvas-container">
+                            <canvas id="reflectionCanvas" width="600" height="400"></canvas>
+                        </div>
+                        <div class="controls">
+                            <label for="angleSlider">Angle: <span id="angleValue">45</span>°</label>
+                            <input type="range" id="angleSlider" min="0" max="90" value="45" class="slider">
+                            <button onclick="resetReflectionSimulation()">Reset</button>
+                        </div>
+                    </div>
+                `;
+                setupReflectionSimulation();
+            } else if (type === 'newton') {
+                workspace.innerHTML = `
+                    <div class="simulation-area">
+                        <h2>Newton's Third Law Simulation</h2>
+                        <div id="newton-canvas-container">
+                            <canvas id="newtonCanvas" width="600" height="400"></canvas>
+                        </div>
+                        <div class="controls">
+                            <label for="forceSlider">Force: <span id="forceValue">50</span>N</label>
+                            <input type="range" id="forceSlider" min="0" max="100" value="50" class="slider">
+                             <button onclick="resetNewtonSimulation()">Reset</button>
+                        </div>
+                    </div>
+                `;
+                setupNewtonSimulation();
+            }
+        }
+
+// Setup Law of Reflection Simulation
+function setupReflectionSimulation() {
+    const canvas = document.getElementById('reflectionCanvas');
+    const ctx = canvas.getContext('2d');
+    const angleSlider = document.getElementById('angleSlider');
+    const angleValue = document.getElementById('angleValue');
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw mirror
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height - 20);
+        ctx.lineTo(canvas.width, canvas.height - 20);
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 5;
+        ctx.stroke();
+
+        // Get angle from slider
+        const angle = parseFloat(angleSlider.value);
+        angleValue.textContent = angle;
+
+        // Calculate incident ray
+        const incidentEndY = canvas.height - 20;
+        const incidentStartX = canvas.width / 2 - Math.tan(angle * Math.PI / 180) * incidentEndY;
+        const incidentEndX = canvas.width / 2;
+
+        // Draw incident ray
+        ctx.beginPath();
+        ctx.moveTo(incidentStartX, 0);
+        ctx.lineTo(incidentEndX, incidentEndY);
+        ctx.strokeStyle = 'blue';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Calculate reflected ray
+        const reflectedStartX = canvas.width / 2;
+        const reflectedEndX = canvas.width / 2 + Math.tan(angle * Math.PI / 180) * incidentEndY;
+
+        // Draw reflected ray
+        ctx.beginPath();
+        ctx.moveTo(reflectedStartX, incidentEndY);
+        ctx.lineTo(reflectedEndX, 0);
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+
+    angleSlider.addEventListener('input', draw);
+    draw(); // Initial draw
+}
+
+function resetReflectionSimulation() {
+    const angleSlider = document.getElementById('angleSlider');
+    angleSlider.value = 45; // Reset to default value
+    setupReflectionSimulation(); // Redraw the simulation
+}
+
+// Setup Newton's Third Law Simulation
+function setupNewtonSimulation() {
+    const canvas = document.getElementById('newtonCanvas');
+    const ctx = canvas.getContext('2d');
+    const forceSlider = document.getElementById('forceSlider');
+    const forceValue = document.getElementById('forceValue');
+
+    let box1 = { x: 50, y: canvas.height / 2 - 25, width: 50, height: 50, vx: 0 };
+    let box2 = { x: canvas.width - 100, y: canvas.height / 2 - 25, width: 50, height: 50, vx: 0 };
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Get force from slider
+        const force = parseFloat(forceSlider.value);
+        forceValue.textContent = force;
+
+        // Update velocities based on force (simplified)
+        box1.vx = force / 10;
+        box2.vx = -force / 10;
+
+        // Update positions
+        box1.x += box1.vx;
+        box2.x += box2.vx;
+
+        // Basic collision check
+        if (box1.x + box1.width > box2.x) {
+            box1.vx = -box1.vx;
+            box2.vx = -box2.vx;
+        }
+
+        // Draw boxes
+        ctx.fillStyle = 'blue';
+        ctx.fillRect(box1.x, box1.y, box1.width, box1.height);
+        ctx.fillStyle = 'red';
+        ctx.fillRect(box2.x, box2.y, box2.width, box2.height);
+    }
+
+    function animate() {
+        draw();
+        requestAnimationFrame(animate);
+    }
+
+    forceSlider.addEventListener('input', draw);
+    animate(); // Start animation loop
+}
+
+function resetNewtonSimulation() {
+    const forceSlider = document.getElementById('forceSlider');
+    forceSlider.value = 50; // Reset to default value.
+    setupNewtonSimulation(); // Redraw the simulation.
+}
+
+    </script>
+</body>
+</html>
